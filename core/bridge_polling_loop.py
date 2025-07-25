@@ -67,6 +67,7 @@ class Tuya2MqttBridge:
 
         self._register_mqtt_handlers()
         self._shutdown_event = threading.Event()
+        self._daemon_thread_pool = concurrent.futures.ThreadPoolExecutor(max_workers=4)
 
         metrics_cfg = ext_cfg.get("metrics", {})
         if metrics_cfg.get("enabled", False):
