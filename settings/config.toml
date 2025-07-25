@@ -1,0 +1,5 @@
+[extensions.homie.lifecycle]
+enabled = true
+
+[extensions.metrics]
+enabled = true
