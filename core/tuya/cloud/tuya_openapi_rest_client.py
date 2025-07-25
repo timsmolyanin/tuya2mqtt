@@ -1,4 +1,5 @@
 import sys
+import tinytuya
 from .tinytuya_cloud_transport import TinyCloud
 import requests.exceptions as req_exc
 from core.tuya import tuya_constants as const
@@ -56,4 +57,6 @@ class CloudAPI:
         return self._cloud
 
     def set_device_id(self, dev_id: list):
-        self._cloud.set_device_id(dev_id)
+        print(dev_id)
+        self._cloud.apiDeviceID = dev_id
+        print(self._cloud)

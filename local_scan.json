@@ -1,65 +1,41 @@
 {
-    "10.2.113.191": {
+    "10.2.113.186": {
         "Error": "Error Response from Tuya Cloud",
         "Err": "913",
         "Payload": "Error from Tuya Cloud: Code 1106: 'permission deny'",
         "id": "bf1c738db44132336eob50"
     },
-    "10.2.113.195": {
+    "10.2.113.189": {
         "Error": "Error Response from Tuya Cloud",
         "Err": "913",
         "Payload": "Error from Tuya Cloud: Code 1106: 'permission deny'",
         "id": "bfe633fc8e511b248fk3v0"
     },
-    "192.168.2.203": {
-        "ip": "192.168.2.203",
-        "gwId": "bf87fe3cacacb1ef4e8aug",
+    "192.168.2.219": {
+        "ip": "192.168.2.219",
+        "gwId": "bf665c2956b6b01103lbkm",
         "active": 2,
         "encrypt": true,
-        "productKey": "UMY07qPklTW0HgqT",
-        "version": "3.3",
-        "name": "Single receiver controller",
+        "productKey": "yv6mex3wufrtn0eo",
+        "version": "3.4",
+        "token": true,
+        "wf_cfg": true,
+        "name": "033760 1CH WI-FI",
         "key": "",
-        "mac": "fc:67:1f:f5:2f:d4",
-        "id": "bf87fe3cacacb1ef4e8aug",
+        "mac": "c4:82:e1:0c:1f:88",
+        "id": "bf665c2956b6b01103lbkm",
         "ability": 0,
-        "token": "",
-        "wf_cfg": "",
         "dev_type": "default",
         "origin": "broadcast",
         "merge_with_cloud": true,
-        "product_name": "Single receiver controller",
-        "icon": "https://images.tuyaeu.com/smart/icon/1503907259_0.jpeg"
+        "product_name": "",
+        "icon": "https://images.tuyaeu.com/smart/icon/ay1558362213011XZWQ6/d159fa2bfff8ffeb860100ba5072b844.png"
     },
-    "10.2.113.183": {
+    "10.2.113.197": {
         "Error": "Error Response from Tuya Cloud",
         "Err": "913",
         "Payload": "Error from Tuya Cloud: Code 1106: 'permission deny'",
-        "id": "bf02016ddf3d1af188nchv"
-    },
-    "192.168.2.207": {
-        "ip": "192.168.2.207",
-        "gwId": "bfa1335ce146aaed94xayr",
-        "active": 2,
-        "encrypt": true,
-        "productKey": "keym557nqw3p8p7m",
-        "version": "3.4",
-        "lan_cap": 500,
-        "lan_seq": 122,
-        "lan_ablilty": 1,
-        "token": true,
-        "wf_cfg": true,
-        "clientLink": 3,
-        "name": "WG-Z1",
-        "key": "",
-        "mac": "4c:a9:19:bc:74:55",
-        "id": "bfa1335ce146aaed94xayr",
-        "ability": 0,
-        "dev_type": "default",
-        "origin": "broadcast",
-        "merge_with_cloud": true,
-        "product_name": "WG-Z1",
-        "icon": "https://images.tuyaeu.com/smart/icon/bay1582792082674aC0a/4c0cd02e7f42653a61885ffcc9c0b8bf.png"
+        "id": "bf797c954b478cb046vlxe"
     },
     "192.168.2.209": {
         "ip": "192.168.2.209",
@@ -101,34 +77,75 @@
         "product_name": "Arlight 4CH WiFi",
         "icon": "https://images.tuyaeu.com/smart/icon/ay1558362213011XZWQ6/a2437b14d8131bff5b087a782d1df964.jpg"
     },
-    "10.2.113.192": {
-        "Error": "Error Response from Tuya Cloud",
-        "Err": "913",
-        "Payload": "Error from Tuya Cloud: Code 28841002: 'No permissions. Your subscription to cloud development plan has expired.'",
-        "id": "bf797c954b478cb046vlxe"
+    "192.168.2.203": {
+        "ip": "192.168.2.203",
+        "gwId": "bf87fe3cacacb1ef4e8aug",
+        "active": 2,
+        "encrypt": true,
+        "productKey": "UMY07qPklTW0HgqT",
+        "version": "3.3",
+        "name": "Single receiver controller",
+        "key": "",
+        "mac": "fc:67:1f:f5:2f:d4",
+        "id": "bf87fe3cacacb1ef4e8aug",
+        "ability": 0,
+        "token": "",
+        "wf_cfg": "",
+        "dev_type": "default",
+        "origin": "broadcast",
+        "merge_with_cloud": true,
+        "product_name": "Single receiver controller",
+        "icon": "https://images.tuyaeu.com/smart/icon/1503907259_0.jpeg"
     },
-    "192.168.2.219": {
-        "Error": "Error Response from Tuya Cloud",
-        "Err": "913",
-        "Payload": "Error from Tuya Cloud: Code 28841002: 'No permissions. Your subscription to cloud development plan has expired.'",
-        "id": "bf665c2956b6b01103lbkm"
+    "192.168.2.207": {
+        "ip": "192.168.2.207",
+        "gwId": "bfa1335ce146aaed94xayr",
+        "active": 2,
+        "encrypt": true,
+        "productKey": "keym557nqw3p8p7m",
+        "version": "3.4",
+        "lan_cap": 500,
+        "lan_seq": 125,
+        "lan_ablilty": 1,
+        "token": true,
+        "wf_cfg": true,
+        "clientLink": 2,
+        "name": "WG-Z1",
+        "key": "",
+        "mac": "4c:a9:19:bc:74:55",
+        "id": "bfa1335ce146aaed94xayr",
+        "ability": 0,
+        "dev_type": "default",
+        "origin": "broadcast",
+        "merge_with_cloud": true,
+        "product_name": "WG-Z1",
+        "icon": "https://images.tuyaeu.com/smart/icon/bay1582792082674aC0a/4c0cd02e7f42653a61885ffcc9c0b8bf.png"
     },
     "10.2.113.193": {
         "Error": "Error Response from Tuya Cloud",
         "Err": "913",
-        "Payload": "Error from Tuya Cloud: Code 28841002: 'No permissions. Your subscription to cloud development plan has expired.'",
+        "Payload": "Error from Tuya Cloud: Code 1106: 'permission deny'",
         "id": "bf02016ddf3d1af188nchv"
     },
-    "10.2.113.189": {
-        "Error": "Error Response from Tuya Cloud",
-        "Err": "913",
-        "Payload": "Error from Tuya Cloud: Code 28841002: 'No permissions. Your subscription to cloud development plan has expired.'",
-        "id": "bf1c738db44132336eob50"
-    },
     "192.168.2.149": {
-        "Error": "Error Response from Tuya Cloud",
-        "Err": "913",
-        "Payload": "Error from Tuya Cloud: Code 28841002: 'No permissions. Your subscription to cloud development plan has expired.'",
-        "id": "03805450a4e57ca7a1e0"
+        "ip": "192.168.2.149",
+        "gwId": "03805450a4e57ca7a1e0",
+        "active": 2,
+        "ability": 0,
+        "mode": 0,
+        "encrypt": true,
+        "productKey": "DEQevYCSHLnbDube",
+        "version": "3.3",
+        "name": "RGB Smart Plug",
+        "key": "",
+        "mac": "a4:e5:7c:a7:a1:e0",
+        "id": "03805450a4e57ca7a1e0",
+        "token": "",
+        "wf_cfg": "",
+        "dev_type": "default",
+        "origin": "broadcast",
+        "merge_with_cloud": true,
+        "product_name": "RGB Smart Plug",
+        "icon": "https://images.tuyaeu.com/smart/icon/15236002431ht4plmhhyrzxxim6smtl6jemi_0.jpg"
     }
 }

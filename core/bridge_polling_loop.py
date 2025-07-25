@@ -159,7 +159,7 @@ class Tuya2MqttBridge:
             self._logger.info("Ctrl+C received")
 
     # MQTT HANDLERS
-    @util.require_state(const.BridgeState.LAN_ONLY, const.BridgeState.ONLINE)
+    @require_state(const.BridgeState.LAN_ONLY, const.BridgeState.ONLINE)
     def on_device_command(self, *args):
         
         topic, payload = args[0], args[1]
@@ -198,7 +198,7 @@ class Tuya2MqttBridge:
         self._logger.info("Received SET FRIENDLY NAME request via MQTT.")
         self._daemon_thread_pool.submit(self._set_friendly_name, *args)
 
-    @util.require_state(const.BridgeState.LAN_ONLY, const.BridgeState.ONLINE)
+    @require_state(const.BridgeState.LAN_ONLY, const.BridgeState.ONLINE)
     def on_scan_command(self, *args):
         """
         payload: ""
@@ -206,7 +206,7 @@ class Tuya2MqttBridge:
         self._logger.info("Received SCAN request via MQTT.")
         self._daemon_thread_pool.submit(self._scanner.scan_local_network)
 
-    @util.require_state(const.BridgeState.LAN_ONLY, const.BridgeState.ONLINE)
+    @require_state(const.BridgeState.LAN_ONLY, const.BridgeState.ONLINE)
     def on_scan_gen_command(self, *args):
         """
         payload: ""
@@ -219,7 +219,7 @@ class Tuya2MqttBridge:
             scan_time = scan_time_obj["scan_time"]
         self._daemon_thread_pool.submit(self._scanner.scan_gen_local_network, scan_time)
     
-    @util.require_state(const.BridgeState.LAN_ONLY, const.BridgeState.ONLINE)
+    @require_state(const.BridgeState.LAN_ONLY, const.BridgeState.ONLINE)
     def on_scan_gen_all_command(self, *args):
         """
         payload: ""
@@ -232,7 +232,7 @@ class Tuya2MqttBridge:
             scan_time = scan_time_obj["scan_time"]
         self._daemon_thread_pool.submit(self._scanner.scan_gen_all_local_network, scan_time)
     
-    @util.require_state(const.BridgeState.ONLINE)
+    @require_state(const.BridgeState.ONLINE)
     def on_add_devices(self, *args):
         self._logger.info("Received ADD devices request via MQTT.")
         self._daemon_thread_pool.submit(self._add_devices, *args)
@@ -241,7 +241,7 @@ class Tuya2MqttBridge:
         self._logger.info("Received REMOVE devices request via MQTT.")
         self._daemon_thread_pool.submit(self._remove_device, *args)
     
-    @util.require_state(const.BridgeState.ONLINE)
+    @require_state(const.BridgeState.ONLINE)
     def on_update_device_key(self, *args):
         """
         payload: {"device_id": "<id1>"}
@@ -446,7 +446,7 @@ class Tuya2MqttBridge:
             return
 
     def _check_network(self, *args):
-        self._set_state(util._determine_net_state())
+        self._set_state(_determine_net_state())
     
     def _poll_loop(self):
         """Deamon Thread: every POLL_INTERVAL seconds send tasks."""

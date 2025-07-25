@@ -5,9 +5,8 @@ import re
 import logging
 from typing import Any, Dict
 
-from homie.homie_device import HomieDevice
-from homie.tuya_to_homie5 import TuyaHomieConverter, TemplateManager, _sanitize_id   # type: ignore
-from tuya_device import TuyaDevice
+from extensions.homie.common.homie_device_model import HomieDevice
+from core.tuya_device_entity import TuyaDevice
 
 # ---------------------------------------------------------------------------
 # Re‑used patterns from GenericConverter

@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 import time
 import threading
-import core.tuya.tuya_constants as const
 import queue
 import itertools
 
-from core.tuya.tuya_constants import tuya_constants as tinytuya  # константы
+import core.tuya.tuya_constants as tinytuya  # константы
 from core.tuya.local.tinytuya_local_transport import TinyLocalTransport
 
 class TuyaDevice:
