@@ -16,6 +16,7 @@ from extensions.homie.common.homie_device_model import HomieDevice
 from extensions.homie.common.homie_bridge_adapter import DeviceBridge
 from extensions.homie.common.tuya_to_homie_converter import TuyaHomieConverter, TemplateManager
 from extensions.homie.lifecycle.homie_lifecycle_extension import Extension
+from core.settings_loader import load_settings
 
 #------------------------------------
 from core.logger_setup import configure_logger 
@@ -30,6 +31,7 @@ from core.tuya.discovery.tuya_udp_device_scanner import Scanner
 class Tuya2MqttBridge:
     def __init__(self):
         self._logger = configure_logger()
+        self._config = load_settings()
         self._device_store = DeviceStore(self._logger)
         SignalManager(self._graceful_shutdown, self._logger).install()
 
@@ -44,9 +46,15 @@ class Tuya2MqttBridge:
             self._device_store.load_devices(tuya_devices_conf)
         
         self._device_store.make_hum_name_to_id()
-        # --- Homie 5 init ---
-        self._homie_converter = TuyaHomieConverter(TemplateManager("extensions/homie/common/templates/"))
-        self._sync = Extension(self._mqtt, self._device_store, self._homie_converter, logger=self._logger)
+
+        ext_cfg = self._config.get("extensions", {})
+        homie_cfg = ext_cfg.get("homie", {}).get("lifecycle", {})
+        if homie_cfg.get("enabled", False):
+            self._homie_converter = TuyaHomieConverter(TemplateManager("extensions/homie/common/templates/"))
+            self._sync = Extension(self._mqtt, self._device_store, self._homie_converter, logger=self._logger)
+        else:
+            self._homie_converter = None
+            self._sync = None
         
         self._tuya_cloud = CloudAPI(self._logger)
 
@@ -60,7 +68,12 @@ class Tuya2MqttBridge:
         self._register_mqtt_handlers()
         self._shutdown_event = threading.Event()
 
-        self._metrics = MetricsExtension()
+        metrics_cfg = ext_cfg.get("metrics", {})
+        if metrics_cfg.get("enabled", False):
+            self._metrics = MetricsExtension()
+        else:
+            self._metrics = None
+
         self._test_all_devs_statuses = {}
 
     # ------------------------------------------------------------------
@@ -127,7 +140,12 @@ class Tuya2MqttBridge:
 
     def start(self):
         self._logger.info("Tuya2MQTT bridge started as daemon thread")
-        self._mqtt.mqtt_module_start(run_method="daemon")    
+        self._mqtt.mqtt_module_start(run_method="daemon")
+
+        if self._sync:
+            self._sync.on_bridge_start(self)
+        if self._metrics:
+            self._metrics.on_bridge_start(self)
 
         self._poll_thread = threading.Thread(target=self._poll_loop, daemon=True)
         self._poll_thread.start()
@@ -312,7 +330,8 @@ class Tuya2MqttBridge:
                 new_devices_conf = []
             self._device_store.write(const.DEVICES_CONF_FILE, joined_devices_config)
             self._device_store.load_devices(joined_devices_config)
-            self._sync.on_devices_added(new_devices_conf)
+            if self._sync:
+                self._sync.on_devices_added(new_devices_conf)
             if new_devices_conf:
                 response = [self._device_store.make_device_brief(dev) for dev in new_devices_conf]
             else:
@@ -349,8 +368,9 @@ class Tuya2MqttBridge:
                     self._device_store.write(const.DEVICES_CONF_FILE, devs_conf_tmp)
             
             self._logger.info(f"Removed device {removed_devices}")
-            for d in removed_devices:
-                self._sync.on_device_removed(d)
+            if self._sync:
+                for d in removed_devices:
+                    self._sync.on_device_removed(d)
             response = {"device_ids": removed_devices}
             self._mqtt.mqtt_publish_value_to_topic(response_topic, response)
         except Exception as e:
@@ -381,7 +401,8 @@ class Tuya2MqttBridge:
             self._device_store.load_devices(devs_conf_tmp)
             self._device_store.write(const.DEVICES_CONF_FILE, devs_conf_tmp)
 
-            self._sync.on_device_renamed(dev_id, friendly_name)
+            if self._sync:
+                self._sync.on_device_renamed(dev_id, friendly_name)
             self._logger.info(f"Set friendly_name for {dev_id} → {friendly_name}")
         except Exception as e:
             self._logger.error(f"Error in on_friendly_name: {e}")
@@ -415,7 +436,8 @@ class Tuya2MqttBridge:
                 devs_conf_tmp.append(dev)
             self._device_store.load_devices(devs_conf_tmp)
             self._device_store.write(const.DEVICES_CONF_FILE, devs_conf_tmp)
-            self._sync.on_device_key_changed(tuya_device_id)
+            if self._sync:
+                self._sync.on_device_key_changed(tuya_device_id)
             self._logger.info(f"Local key for device {tuya_device_id} updated with {local_key}") 
             self._mqtt.mqtt_publish_value_to_topic(response_topic, local_key)
         except Exception as e:
@@ -431,10 +453,12 @@ class Tuya2MqttBridge:
             try:
                 for device_id, device_obj in self._device_store.get_devices().items():
                     device_obj.update_status_async(self._handle_devices_status)
-                    self._metrics.inc_total()
+                    if self._metrics:
+                        self._metrics.inc_total()
                 time.sleep(const.POLL_INTERVAL)
             except Exception as e:
-                self._metrics.record_error(str(type(e)))
+                if self._metrics:
+                    self._metrics.record_error(str(type(e)))
                 self._logger.error(f"Error polling {device_id}: {e}")
     
     def _handle_devices_status(self, *args):
@@ -445,16 +469,18 @@ class Tuya2MqttBridge:
             human_readable_dps = self._parse_answer_from_devs(device_id, raw_feedback)
             human_readable_dps["request_status_time"] = round(estimated_time, 3)
             if estimated_time > 5:
-                self._metrics.inc_slow()
+                if self._metrics:
+                    self._metrics.inc_slow()
             self._publish_device_status(device_id, human_readable_dps)
             # print(device_id, human_readable_dps)
             # print()
 
     def _publish_device_status(self, dev_id: str, dps: dict):
         # forward to Homie representation
-        br = self._sync.device_bridges.get(dev_id)
-        if br:
-            br.publish_status(dps)
+        if self._sync:
+            br = self._sync.device_bridges.get(dev_id)
+            if br:
+                br.publish_status(dps)
         topic = f"{const.SERVICE_ID}/devices/{dev_id}/status"
         self._mqtt.mqtt_publish_value_to_topic(topic, json.dumps(dps))
         """
@@ -503,7 +529,8 @@ class Tuya2MqttBridge:
                 error_data[err_name] = err_desc
         except AttributeError as attr_er:
             self._logger.error(f"Unknown error code {err_code} from {dev_id}")
-        self._metrics.record_error(f"ERR_{err_code}")
+        if self._metrics:
+            self._metrics.record_error(f"ERR_{err_code}")
         self._publish_device_status(dev_id, error_data)
         try:
             err = const.ErrorStatus(err_code)
@@ -581,7 +608,12 @@ class Tuya2MqttBridge:
 
         self._daemon_thread_pool.shutdown(wait=False, cancel_futures=True)
         self._logger.debug("ThreadPoolExecutor stoped")
-    
+
+        if self._sync:
+            self._sync.on_bridge_stop(self)
+        if self._metrics:
+            self._metrics.on_bridge_stop(self)
+
         # Stop the MQTT client
         try:
             self._mqtt.stop()
