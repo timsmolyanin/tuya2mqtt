@@ -31,6 +31,8 @@ from core.tuya.discovery.tuya_udp_device_scanner import Scanner
 class Tuya2MqttBridge:
     def __init__(self):
         self._logger = configure_logger()
+        # Identifier used in MQTT topics
+        self.service_id = const.SERVICE_ID
         self._config = load_settings("/home/tsmolyanin/wk/ttmp/tuya2mqtt/settings/config.toml")
         self._device_store = DeviceStore(self._logger)
         SignalManager(self._graceful_shutdown, self._logger).install()
