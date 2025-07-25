@@ -2,7 +2,7 @@ import functools
 import errno
 import socket
 from contextlib import closing
-from const import BridgeState
+from core.tuya.tuya_constants import BridgeState
 
 def require_state(*allowed):
     def deco(func):
