@@ -447,8 +447,8 @@ class Tuya2MqttBridge:
             self._logger.error(f"Exception calling cloud.getdevices: {e}")
             return
 
-    def _check_network(self, *args):
-        self._set_state(_determine_net_state())
+    # def _check_network(self, *args):
+    #     self._set_state(_determine_net_state())
     
     def _poll_loop(self):
         """Deamon Thread: every POLL_INTERVAL seconds send tasks."""

@@ -4,7 +4,8 @@ import threading
 import queue
 import itertools
 
-import core.tuya.tuya_constants as tinytuya  # константы
+# import tinytuya
+import core.tuya.tuya_constants as tinytuya
 from core.tuya.local.tinytuya_local_transport import TinyLocalTransport
 
 class TuyaDevice:

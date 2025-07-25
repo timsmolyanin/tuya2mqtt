@@ -31,6 +31,8 @@ LOCAL_SCAN_FILE = os.getenv("TUYA2MQTT_LOCAL_SCAN_FILE")
 # Polling interval (seconds)
 POLL_INTERVAL = float(os.getenv("TUYA2MQTT_POLL_INTERVAL"))
 
+CONTROL = 7  # FRM_TP_CMD         # STATE_UPLOAD_CMD
+
 
 class BridgeState(enum.Enum):
     OFFLINE   = 0
