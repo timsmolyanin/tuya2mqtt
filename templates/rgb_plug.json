@@ -1,0 +1,36 @@
+{
+  "match": { "product_id": "DEQevYCSHLnbDubeNNN" },
+
+  "homie": {
+    "nodes": {
+
+      "socket": {
+        "name": "Socket",
+        "type": "switch",
+        "properties": {
+          "power": { "datatype": "boolean", "settable": true, "dp": "switch" }
+        }
+      },
+
+      "led": {
+        "name": "LED Ring",
+        "type": "light",
+        "properties": {
+          "switch_led":      { "datatype": "boolean", "settable": true, "dp": "switch_led" },
+          "brightness": { "datatype": "integer", "format": "25:255:1", "settable": true, "dp": "bright_value" },
+          "color":      { "datatype": "color",   "format": "hsv",     "settable": true, "dp": "colour_data" }
+        }
+      },
+
+      "meter": {
+        "name": "Power Meter",
+        "type": "meter",
+        "properties": {
+          "current": { "datatype": "integer", "unit": "mA", "dp": "cur_current" },
+          "power":   { "datatype": "integer", "unit": "W",  "dp": "cur_power" },
+          "voltage": { "datatype": "integer", "unit": "V",  "dp": "cur_voltage" }
+        }
+      }
+    }
+  }
+}
