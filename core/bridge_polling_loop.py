@@ -15,7 +15,8 @@ from core.utility_functions import *
 from extensions.homie.common.homie_device_model import HomieDevice
 from extensions.homie.common.homie_bridge_adapter import DeviceBridge
 from extensions.homie.common.tuya_to_homie_converter import TuyaHomieConverter, TemplateManager
-from extensions.homie.lifecycle.homie_lifecycle_extension import Extension
+from extensions.homie.lifecycle.homie_lifecycle_extension import Extension as HomieLifecycleExtension
+from extensions.homie.homie_broadcast_extension import HomieBroadcastExtension
 from core.settings_loader import load_settings
 
 #------------------------------------
@@ -50,13 +51,24 @@ class Tuya2MqttBridge:
         self._device_store.make_hum_name_to_id()
 
         ext_cfg = self._config.get("extensions", {})
-        homie_cfg = ext_cfg.get("homie", {}).get("lifecycle", {})
-        if homie_cfg.get("enabled", False):
+        homie_cfg = ext_cfg.get("homie", {})
+        lifecycle_cfg = homie_cfg.get("lifecycle", {})
+        if lifecycle_cfg.get("enabled", False):
             self._homie_converter = TuyaHomieConverter(TemplateManager("extensions/homie/common/templates/"))
-            self._sync = Extension(self._mqtt, self._device_store, self._homie_converter, logger=self._logger)
+            self._sync = HomieLifecycleExtension(
+                self._mqtt, self._device_store, self._homie_converter, logger=self._logger
+            )
         else:
             self._homie_converter = None
             self._sync = None
+
+        broadcast_cfg = homie_cfg.get("broadcast", {})
+        if broadcast_cfg.get("enabled", False) and self._sync:
+            self._broadcast = HomieBroadcastExtension(
+                self._mqtt, self._device_store, self._sync, logger=self._logger
+            )
+        else:
+            self._broadcast = None
         
         self._tuya_cloud = CloudAPI(self._logger)
 
@@ -147,6 +159,8 @@ class Tuya2MqttBridge:
 
         if self._sync:
             self._sync.on_bridge_start(self)
+        if self._broadcast:
+            self._broadcast.on_bridge_start(self)
         if self._metrics:
             self._metrics.on_bridge_start(self)
 
