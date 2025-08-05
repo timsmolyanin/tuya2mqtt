@@ -347,8 +347,12 @@ class Tuya2MqttBridge:
                 new_devices_conf = []
             self._device_store.write(const.DEVICES_CONF_FILE, joined_devices_config)
             self._device_store.load_devices(joined_devices_config)
+            self._device_store.make_hum_name_to_id()
             if self._sync:
-                self._sync.on_devices_added(new_devices_conf)
+                updated_new_devices = [
+                    self._device_store.get_devices(dev["id"]).to_dict() for dev in new_devices_conf
+                ]
+                self._sync.on_devices_added(updated_new_devices)
             if new_devices_conf:
                 response = [self._device_store.make_device_brief(dev) for dev in new_devices_conf]
             else:

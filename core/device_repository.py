@@ -113,8 +113,9 @@ class DeviceStore:
             for device in joined_devs:
                 if device["id"] in devices_id_to_add:
                     filtered_joined_devs.append(device)
-            
+
             joined_devs = filtered_joined_devs
+            new_devices_conf = filtered_joined_devs
 
         return new_devices_conf, joined_devs
 
