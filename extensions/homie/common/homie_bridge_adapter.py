@@ -71,6 +71,10 @@ class DeviceBridge:
             node_id = _node_id(dp_code)
             self._prop_to_dp[prop_id] = dp_code
             self._prop_to_node[prop_id] = node_id
+        # Cache of last published property values
+        self._prop_cache: Dict[str, str] = {}
+        # Remember previous values when optimistic updates are made
+        self._pending: Dict[str, str | None] = {}
 
     # ------------------------------------------------------------------
     # incoming Tuya → Homie
@@ -82,8 +86,19 @@ class DeviceBridge:
             prop_id = _property_id(dp_code)
             node_id = self._prop_to_node.get(prop_id) or _node_id(dp_code)
             if isinstance(value, bool):
-                value = "true" if value else "false"
-            self.homie.publish_property(node_id, prop_id, value)
+                value_str = "true" if value else "false"
+            else:
+                value_str = str(value)
+            cached = self._prop_cache.get(prop_id)
+            if cached != value_str:
+                self.homie.publish_property(node_id, prop_id, value_str)
+                self._prop_cache[prop_id] = value_str
+            if prop_id in self._pending:
+                try:
+                    self.homie.publish_target(node_id, prop_id, "")
+                except Exception:
+                    pass
+                self._pending.pop(prop_id, None)
 
     # ------------------------------------------------------------------
     # incoming Homie → Tuya
@@ -107,6 +122,10 @@ class DeviceBridge:
             except ValueError:
                 pass  # leave as string
         self._logger.debug(f"Set {dp_code} <- {value}")
+        prev = self._prop_cache.get(prop_id)
+        self.homie.publish_property(node_id, prop_id, value_raw)
+        self._prop_cache[prop_id] = value_raw
+        self._pending[prop_id] = prev
         self.tuya.set_status_async({dp_code: value})
         # acknowledge target
         try:
