@@ -242,7 +242,7 @@ class TuyaHomieConverter:
         tpl = self.template_manager.find_template(device)
         if tpl:
             return self._apply_template(device, tpl)
-        dev_id, desc = self.generic_converter.device_to_homie(device)
+        dev_id, desc, _ = self.generic_converter.device_to_homie(device)
         return dev_id, desc, None, False
 
     def convert_devices(self, devices: List[Dict[str, Any]]) -> Dict[str, Tuple[Dict[str, Any], Dict[str, str]]]:
