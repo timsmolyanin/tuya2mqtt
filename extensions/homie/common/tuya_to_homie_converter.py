@@ -215,28 +215,37 @@ class TuyaHomieConverter:
     template_manager: TemplateManager
     generic_converter: GenericConverter = field(default_factory=GenericConverter)
 
-    def convert_device(self, device: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
+    def convert_device(
+        self, device: Dict[str, Any]
+    ) -> Tuple[str, Dict[str, Any], Dict[Tuple[str, str], str] | None, bool]:
         tpl = self.template_manager.find_template(device)
         if tpl:
             return self._apply_template(device, tpl)
-        return self.generic_converter.device_to_homie(device)
+        dev_id, desc = self.generic_converter.device_to_homie(device)
+        return dev_id, desc, None, False
 
     def convert_devices(self, devices: List[Dict[str, Any]]) -> Dict[str, Any]:
-        return {d: desc for d, desc in map(self.convert_device, devices)}
+        return {d: desc for d, desc, _, _ in map(self.convert_device, devices)}
 
     # internal
-    def _apply_template(self, device: Dict[str, Any], tpl: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
-        dev_id = _sanitize_id(device.get("id") or device.get("uuid") or device.get("mac") or "device")
+    def _apply_template(
+        self, device: Dict[str, Any], tpl: Dict[str, Any]
+    ) -> Tuple[str, Dict[str, Any], Dict[Tuple[str, str], str], bool]:
+        dev_id = _sanitize_id(
+            device.get("id") or device.get("uuid") or device.get("mac") or "device"
+        )
         name = device.get("name") or device.get("product_name") or dev_id
         desc = json.loads(json.dumps(tpl))  # deep copy
 
-        # strip dp hints
-        for node in desc.get("nodes", {}).values():
-            for p in node.get("properties", {}).values():
-                p.pop("dp", None)
+        mapping: Dict[Tuple[str, str], str] = {}
+        for node_id, node in desc.get("nodes", {}).items():
+            for prop_id, p in node.get("properties", {}).items():
+                dp = p.pop("dp", None)
+                if dp is not None:
+                    mapping[(node_id, prop_id)] = str(dp)
 
         desc.setdefault("homie", "5.0")
         desc.setdefault("version", int(time.time()))
         desc.setdefault("name", name)
         desc.setdefault("extensions", {})["tuya"] = _tuya_extension(device)
-        return dev_id, desc
+        return dev_id, desc, mapping, True
