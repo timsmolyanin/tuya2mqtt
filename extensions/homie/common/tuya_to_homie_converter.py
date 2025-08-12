@@ -168,15 +168,34 @@ class GenericConverter:
 
     # public --------------------------------------------------------------
 
-    def device_to_homie(self, dev: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
-                
-        dev_id = _sanitize_id(dev.get("friendly_name") or dev.get("id") or dev.get("uuid") or dev.get("mac") or "device") or dev.get("uuid") or dev.get("mac") or "device"
+    def device_to_homie(self, dev: Dict[str, Any]) -> Tuple[str, Dict[str, Any], Dict[str, str]]:
 
-
+        dev_id = _sanitize_id(
+            dev.get("friendly_name")
+            or dev.get("id")
+            or dev.get("uuid")
+            or dev.get("mac")
+            or "device"
+        ) or dev.get("uuid") or dev.get("mac") or "device"
         name = dev.get("name") or dev.get("product_name") or dev_id
         nodes: Dict[str, Dict[str, Any]] = defaultdict(lambda: {"properties": {}})
+        prop_map: Dict[str, str] = {}
 
-        for dp in (dev.get("mapping") or {}).values():
+        # for dp in (dev.get("mapping") or {}).values():
+        # ``mapping`` can be either a dict of {dp_num: {...}} coming from
+        # ``devices.json`` or a list of descriptors returned by a raw scan.
+        # Make sure we can handle both shapes gracefully.
+        mapping_raw = dev.get("mapping") or {}
+        if isinstance(mapping_raw, dict):
+            dps_iter = mapping_raw.values()
+        elif isinstance(mapping_raw, list):
+            dps_iter = mapping_raw
+        else:
+            dps_iter = []
+
+        for dp in dps_iter:
+            if not isinstance(dp, dict):
+                continue
             code = dp.get("code")
             if not code or self._is_excluded(code):
                 continue
@@ -191,6 +210,7 @@ class GenericConverter:
                     i += 1
                 pid = f"{pid}-{i}"
             props[pid] = self._property(dp)
+            prop_map[pid] = code
 
         for nid, n in nodes.items():
             n.setdefault("name", nid.title())
@@ -201,10 +221,11 @@ class GenericConverter:
             "name": name,
             "nodes": dict(nodes),
             "extensions": {"tuya": _tuya_extension(dev)},
-        }
+            }, prop_map
 
-    def devices_to_homie(self, devices: List[Dict[str, Any]]) -> Dict[str, Any]:
-        return {d: desc for d, desc in map(self.device_to_homie, devices)}
+
+    def devices_to_homie(self, devices: List[Dict[str, Any]]) -> Dict[str, Tuple[Dict[str, Any], Dict[str, str]]]:
+        return {d: (desc, mapping) for d, desc, mapping in map(self.device_to_homie, devices)}
 
 # ---------------------------------------------------------------------------
 # 4.  Orchestrator
@@ -224,7 +245,7 @@ class TuyaHomieConverter:
         dev_id, desc = self.generic_converter.device_to_homie(device)
         return dev_id, desc, None, False
 
-    def convert_devices(self, devices: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def convert_devices(self, devices: List[Dict[str, Any]]) -> Dict[str, Tuple[Dict[str, Any], Dict[str, str]]]:
         return {d: desc for d, desc, _, _ in map(self.convert_device, devices)}
 
     # internal
@@ -236,7 +257,9 @@ class TuyaHomieConverter:
         )
         name = device.get("name") or device.get("product_name") or dev_id
         desc = json.loads(json.dumps(tpl))  # deep copy
+        prop_map: Dict[str, str] = {}
 
+        # strip dp hints
         mapping: Dict[Tuple[str, str], str] = {}
         for node_id, node in desc.get("nodes", {}).items():
             for prop_id, p in node.get("properties", {}).items():

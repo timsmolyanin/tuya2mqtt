@@ -27,6 +27,7 @@ MQTT_TOPIC_PREFIX = "/devices"
 # Service config files
 DEVICES_CONF_FILE = os.getenv("TUYA2MQTT_DEV_CONF_FILE")
 LOCAL_SCAN_FILE = os.getenv("TUYA2MQTT_LOCAL_SCAN_FILE")
+EXTANSIONS_SETTINGS_FILE = os.getenv("TUYA2MQTT_EXTANSIONS_SETTINGS_FILE")
 
 # Polling interval (seconds)
 POLL_INTERVAL = float(os.getenv("TUYA2MQTT_POLL_INTERVAL"))

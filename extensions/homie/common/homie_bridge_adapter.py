@@ -69,6 +69,7 @@ class DeviceBridge:
         self.tuya = tuya_dev
         self.homie = homie_dev
         self._logger = logger or logging.getLogger(f"DeviceBridge[{tuya_dev.dev_id}]")
+        
         self._strict = strict
 
         self._prop_to_dp: Dict[Tuple[str, str], str] = {}
@@ -79,7 +80,19 @@ class DeviceBridge:
                 self._prop_to_dp[(node_id, prop_id)] = dp_code
                 self._dp_to_prop[dp_code] = (node_id, prop_id)
         else:
-            for dp_num, m in tuya_dev.get_mapping().items():
+            raw_mapping = tuya_dev.get_mapping() or {}
+            if isinstance(raw_mapping, dict):
+                items = raw_mapping.items()
+            elif isinstance(raw_mapping, list):
+                items = (
+                    (m.get("id") or m.get("dp_id") or m.get("code"), m)
+                    for m in raw_mapping
+                )
+            else:
+                items = []
+            for dp_num, m in items:
+                if not isinstance(m, dict):
+                    continue
                 dp_code = m.get("code", str(dp_num))
                 prop_id = _property_id(dp_code)
                 node_id = _node_id(dp_code)
@@ -88,6 +101,7 @@ class DeviceBridge:
 
         self._prop_cache: Dict[Tuple[str, str], str] = {}
         self._pending: Dict[Tuple[str, str], str | None] = {}
+        
 
     # ------------------------------------------------------------------
     # incoming Tuya → Homie
@@ -96,6 +110,7 @@ class DeviceBridge:
         for dp_code, value in dps.items():
             if dp_code == "request_status_time":
                 continue
+            
             pair = self._dp_to_prop.get(dp_code)
             if pair:
                 node_id, prop_id = pair
@@ -106,12 +121,15 @@ class DeviceBridge:
                 prop_id = _property_id(dp_code)
                 self._dp_to_prop[dp_code] = (node_id, prop_id)
                 self._prop_to_dp[(node_id, prop_id)] = dp_code
+
             if isinstance(value, bool):
                 value_str = "true" if value else "false"
             else:
                 value_str = str(value)
+
             key = (node_id, prop_id)
             cached = self._prop_cache.get(key)
+
             if cached != value_str:
                 self.homie.publish_property(node_id, prop_id, value_str)
                 self._prop_cache[key] = value_str

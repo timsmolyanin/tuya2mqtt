@@ -34,7 +34,8 @@ class Tuya2MqttBridge:
         self._logger = configure_logger()
         # Identifier used in MQTT topics
         self.service_id = const.SERVICE_ID
-        self._config = load_settings("/home/tsmolyanin/wk/ttmp/tuya2mqtt/settings/config.toml")
+        # self._config = load_settings("/home/tsmolyanin/wk/ttmp/tuya2mqtt/settings/config.toml")
+        self._config = load_settings()
         self._device_store = DeviceStore(self._logger)
         SignalManager(self._graceful_shutdown, self._logger).install()
 
@@ -375,7 +376,6 @@ class Tuya2MqttBridge:
                     tuya_dev = self._device_store.get_devices(dev_id)
                     if tuya_dev:
                         tuya_dev.stop_worker()
-                        tuya_dev.join()
                     
                     self._device_store.remove_device(dev_id)
                     removed_devices.append(dev_id)

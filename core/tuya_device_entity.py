@@ -72,15 +72,21 @@ class TuyaDevice:
     def stop_worker(self, timeout: float = 1.0):
         self._stop_worker_flag.set()
 
-        sentinel = (0, 0, lambda *a, **kw: None, (), None)
-        self._cmd_queue.put(sentinel)
-
         try:
             while True:
                 self._cmd_queue.get_nowait()
                 self._cmd_queue.task_done()
         except queue.Empty:
             pass
+
+        sentinel = (0, 0, lambda *a, **kw: None, (), None, 0.0, 0.0)
+        self._cmd_queue.put(sentinel)
+
+        self.join(timeout)
+
+    
+    def join(self, timeout: float | None = None):
+        self._cmd_thread.join(timeout)
     
     def _enqueue(self, fn, *args, callback=None, priority=0, ttl=None):
         """
