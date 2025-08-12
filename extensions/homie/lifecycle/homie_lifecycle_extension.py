@@ -62,7 +62,7 @@ class Extension(SyncExtension):
         br = self.device_bridges.get(dev_id)
         if br:
             # regenerate description
-            _, desc = self._conv.convert_device(self._store.get_devices(dev_id).to_dict())
+            _, desc, _, _ = self._conv.convert_device(self._store.get_devices(dev_id).to_dict())
             br.homie.update_description(desc)
             self._logger.debug(f"Republished description for {dev_id}")
 
@@ -76,13 +76,13 @@ class Extension(SyncExtension):
     # ------------------------------------------------------------------ #
     def _create_bridge(self, tuya_dev):
         try:
-            homie_id, desc = self._conv.convert_device(tuya_dev.to_dict())
+            homie_id, desc, mapping, strict = self._conv.convert_device(tuya_dev.to_dict())
             holder = {}
             def _on_set(node, prop, val, _h=holder):
                 if 'bridge' in _h:
                     _h['bridge'].on_set(node, prop, val)
             homie = HomieDevice(self._mqtt, homie_id, desc, on_set=_on_set)
-            bridge = DeviceBridge(tuya_dev, homie, logger=self._logger)
+            bridge = DeviceBridge(tuya_dev, homie, mapping=mapping, strict=strict, logger=self._logger)
             holder['bridge'] = bridge
             self.device_bridges[tuya_dev.dev_id] = bridge
             self._logger.info(f"Homie device ready: Tuya {tuya_dev.dev_id} → homie/5/{homie_id}")

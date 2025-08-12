@@ -99,7 +99,7 @@ class Tuya2MqttBridge:
         devices = self._device_store.get_devices()
         for dev_id, tuya_dev in devices.items():
             try:
-                homie_id, desc = self._homie_converter.convert_device(tuya_dev.to_dict())
+                homie_id, desc, mapping, strict = self._homie_converter.convert_device(tuya_dev.to_dict())
                 holder = {}
                 def _on_set(node, prop, val, _holder=holder):
                     if 'bridge' in _holder:
@@ -110,7 +110,7 @@ class Tuya2MqttBridge:
                     description=desc,
                     on_set=_on_set
                 )
-                bridge = DeviceBridge(tuya_dev, homie_dev, logger=self._logger)
+                bridge = DeviceBridge(tuya_dev, homie_dev, mapping=mapping, strict=strict, logger=self._logger)
                 holder['bridge'] = bridge
                 self._device_bridges[dev_id] = bridge
                 self._logger.debug(f"HomieDevice created for {dev_id} → {homie_id}")
